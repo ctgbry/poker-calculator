@@ -3,173 +3,203 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Midnight Gold 2.0</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Midnight Gold Poker Toolbox</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { ink: "#0F0F0F", gold: "#D4AF37" }, boxShadow: { gold: "0 0 0 1px rgba(212,175,55,.35), 0 16px 40px rgba(0,0,0,.65)" } } }
+    }
+  </script>
   <style>
-    :root { color-scheme: dark; --gold: #D4AF37; }
-    body { background: #0F0F0F; color: var(--gold); font-family: system-ui, sans-serif; overflow: hidden; touch-action: manipulation; }
-    .gold-border { border: 1px solid rgba(212,175,55,.3); }
-    .gold-border-strong { border: 1.5px solid rgba(212,175,55,.8); }
+    :root { color-scheme: dark; }
+    body { background: #0F0F0F; color: #D4AF37; overflow: hidden; touch-action: manipulation; font-family: system-ui, -apple-system, sans-serif; }
+    .gold-border { border: 1px solid rgba(212,175,55,.35); }
+    .gold-border-strong { border: 2px solid rgba(212,175,55,.9); }
     .gold-glow { text-shadow: 0 0 12px rgba(212,175,55,.6); }
-    .sheet { transform: translateY(100%); transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.2, 1); }
+    @keyframes flashGold { 0%, 100% { border-color: rgba(212,175,55,.35); } 50% { border-color: #fffbe0; box-shadow: 0 0 15px rgba(212,175,55,.8); } }
+    .flash-gold { animation: flashGold 500ms ease-out; }
+    .sheet-backdrop { opacity: 0; pointer-events: none; transition: opacity 220ms ease; background: rgba(0,0,0,.75); backdrop-filter: blur(4px); }
+    .sheet-backdrop.on { opacity: 1; pointer-events: auto; }
+    .sheet { transform: translateY(100%); transition: transform 280ms cubic-bezier(.2,.9,.2,1); }
     .sheet.on { transform: translateY(0); }
-    .backdrop { opacity: 0; pointer-events: none; transition: 0.28s; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
-    .backdrop.on { opacity: 1; pointer-events: auto; }
-    @keyframes flash { 0%, 100% { border-color: rgba(212,175,55,.3); } 50% { border-color: #fff; box-shadow: 0 0 10px var(--gold); } }
-    .flash-gold { animation: flash 0.5s ease-out; }
-    input { background: #050505; border: 1px solid rgba(212,175,55,0.2); border-radius: 14px; padding: 10px 14px; width: 100%; color: var(--gold); font-family: monospace; font-size: 1.25rem; outline: none; transition: 0.2s; }
-    input:focus { border-color: var(--gold); }
-    .no-select { user-select: none; -webkit-user-select: none; }
+    input::placeholder { color: rgba(212,175,55,0.15); }
+    /* 這裡保留你的設定：徹底移除討厭的上下箭頭 */
+    input[type="number"]::-webkit-inner-spin-button, 
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   </style>
 </head>
-<body class="no-select">
-
-  <div class="h-[100dvh] flex flex-col">
-    <header class="pt-[calc(env(safe-area-inset-top)+20px)] pb-4 px-6">
-      <div class="text-[10px] tracking-[0.3em] opacity-40 uppercase">Midnight Gold 2.0</div>
-      <h1 class="text-2xl font-bold italic gold-glow">STRATEGY CORE</h1>
+<body class="select-none">
+  <div id="app" class="h-[100dvh] w-full flex flex-col">
+    <header class="pt-[calc(env(safe-area-inset-top)+18px)] pb-3 px-5 flex items-end justify-between">
+      <div>
+        <div class="text-[10px] tracking-[0.24em] opacity-60">MIDNIGHT GOLD 2.0</div>
+        <h1 class="text-[22px] font-bold gold-glow">撲克工具箱</h1>
+      </div>
+      <div class="text-[10px] opacity-50 font-mono italic">Auto-Reset Enabled</div>
     </header>
 
-    <main class="flex-1 px-4 overflow-y-auto pb-[env(safe-area-inset-bottom)]">
-      <div class="grid grid-cols-2 gap-3 mb-6">
-        <button onclick="openTool('mdf_bet')" class="h-36 gold-border-strong rounded-[2rem] bg-gradient-to-br from-[#1c1c1c] to-[#080808] flex flex-col items-center justify-center shadow-gold active:scale-95 transition-all">
-          <span class="text-lg font-bold">面對下注</span>
-          <span class="text-[10px] opacity-50 tracking-widest">FACING BET</span>
+    <main class="flex-1 px-4 pb-[calc(env(safe-area-inset-bottom)+14px)]">
+      <div class="h-full grid grid-cols-3 grid-rows-3 gap-3">
+        <button onclick="openTool('mdf_bet')" class="gold-border-strong rounded-2xl bg-gradient-to-br from-[#1c1c1c] to-[#0c0c0c] active:scale-95 transition-transform shadow-gold">
+          <div class="flex flex-col items-center"><span class="text-[14px] font-bold">面對下注</span><span class="text-[11px] opacity-70 gold-glow">MDF</span></div>
         </button>
-        <button onclick="openTool('mdf_raise')" class="h-36 gold-border rounded-[2rem] bg-[#111] flex flex-col items-center justify-center active:scale-95 transition-all">
-          <span class="text-lg font-bold">面對加註</span>
-          <span class="text-[10px] opacity-50 tracking-widest">FACING RAISE</span>
+        <button onclick="openTool('mdf_raise')" class="gold-border rounded-2xl bg-gradient-to-br from-[#171717] to-[#0c0c0c] active:scale-95 transition-transform">
+          <div class="flex flex-col items-center"><span class="text-[14px] font-bold">面對加註</span><span class="text-[11px] opacity-70">MDF</span></div>
         </button>
+        <button onclick="openTool('spr')" class="gold-border rounded-2xl bg-[#0e0e0e] active:scale-95 transition-transform">
+          <div class="flex flex-col items-center"><span class="text-[14px]">下注幾何</span><span class="text-[10px] opacity-50">SPR</span></div>
+        </button>
+        <button onclick="openTool('odds')" class="gold-border rounded-2xl bg-[#0e0e0e]"><div class="flex flex-col items-center text-[14px]">賠率補牌</div></button>
+        <button onclick="openTool('roi')" class="gold-border rounded-2xl bg-[#0e0e0e]"><div class="flex flex-col items-center text-[14px]">賽事成本</div></button>
+        <button onclick="openTool('time')" class="gold-border rounded-2xl bg-[#0e0e0e]"><div class="flex flex-col items-center text-[14px]">限時抽水</div></button>
       </div>
-
-      <div id="grid-sub" class="grid grid-cols-3 gap-3 mb-6">
-        </div>
     </main>
-  </div>
 
-  <div id="backdrop" class="backdrop fixed inset-0 z-40" onclick="closeTool()"></div>
-  <div id="sheet" class="sheet fixed inset-x-0 bottom-0 h-[85dvh] bg-[#0c0c0c] rounded-t-[40px] border-t border-[rgba(212,175,55,0.4)] z-50 p-7 flex flex-col shadow-2xl">
-    <div class="w-12 h-1.5 bg-white/10 mx-auto mb-8 shrink-0 rounded-full"></div>
-    
-    <div class="flex justify-between items-start mb-8 shrink-0">
-      <div>
-        <h2 id="sheet-title" class="text-2xl font-bold italic">--</h2>
-        <p id="sheet-sub" class="text-[10px] opacity-40 uppercase tracking-[0.2em]">--</p>
+    <div id="backdrop" class="sheet-backdrop fixed inset-0 z-40" onclick="closeTool()"></div>
+    <section id="sheet" class="sheet fixed inset-x-0 bottom-0 h-[82dvh] bg-[#0e0e0e] rounded-t-[32px] border-t border-[rgba(212,175,55,0.4)] shadow-gold z-50 p-6">
+      <div class="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-6"></div>
+      <div class="flex justify-between items-start mb-6">
+        <div><h2 id="toolTitle" class="text-2xl font-bold gold-glow">--</h2><p id="toolSub" class="text-xs opacity-50 tracking-widest uppercase">--</p></div>
+        <button onclick="closeTool()" class="bg-[#1a1a1a] gold-border px-4 py-2 rounded-xl text-xs active:bg-gold active:text-black transition-all">關閉</button>
       </div>
-      <button onclick="closeTool()" class="bg-[#1a1a1a] gold-border px-5 py-2.5 rounded-2xl text-[10px] font-bold active:bg-gold active:text-black">關閉</button>
-    </div>
 
-    <div id="input-area" class="grid grid-cols-2 gap-4 mb-8"></div>
-    <div id="quick-area" class="space-y-6"></div>
-    
-    <div class="mt-auto pt-8 border-t border-white/5">
-      <div id="result-label" class="text-[10px] opacity-40 tracking-widest uppercase">Result Value</div>
-      <div id="result-value" class="text-[72px] font-mono font-bold gold-glow leading-none mt-2">--</div>
-    </div>
-  </div>
+      <div id="mdf_panel" class="space-y-6">
+        <div class="grid grid-cols-3 gap-3">
+          <div id="potBox" class="bg-[#050505] gold-border rounded-2xl p-3 transition-all"><label class="text-[10px] opacity-50 block mb-1">POT 底池</label><input id="in_pot" type="number" placeholder="0" class="w-full bg-transparent text-xl font-mono outline-none text-gold"></div>
+          <div id="betBox" class="bg-[#050505] gold-border rounded-2xl p-3 transition-all"><label class="text-[10px] opacity-50 block mb-1">MY BET</label><input id="in_bet" type="number" placeholder="0" class="w-full bg-transparent text-xl font-mono outline-none text-gold"></div>
+          <div id="raiseBox" class="bg-[#050505] gold-border rounded-2xl p-3 transition-all"><label id="label_raise" class="text-[10px] opacity-50 block mb-1">RAISE TO</label><input id="in_raise" type="number" placeholder="0" class="w-full bg-transparent text-xl font-mono outline-none text-gold"></div>
+        </div>
 
-<script>
-/**
- * 🛠️ 模組化配置：未來要改這裡就好，極快！
- */
-const TOOLS = {
-  mdf_bet: {
-    title: "面對下注", sub: "Facing Bet",
-    fields: [ { id: "pot", label: "POT 底池" }, { id: "opp_bet", label: "OPP BET 對手下注" } ],
-    quick: [ { label: "對手下注 (Pot %)", type: "bet", values: [ { n: "1/3", v: 0.33 }, { n: "1/2", v: 0.5 }, { n: "Pot", v: 1 } ] } ],
-    calc: (v) => ((v.pot / (v.pot + v.opp_bet)) * 100).toFixed(1) + "%"
-  },
-  mdf_raise: {
-    title: "面對加註", sub: "Facing Raise",
-    fields: [ { id: "pot", label: "POT 底池" }, { id: "my_bet", label: "MY BET 我方下注" }, { id: "raise_to", label: "RAISE TO 加註到" } ],
-    quick: [ 
-      { label: "我方下注 (Pot %)", type: "bet", values: [ { n: "1/3", v: 0.33 }, { n: "1/2", v: 0.5 }, { n: "Pot", v: 1 } ] },
-      { label: "對手加註 (倍數)", type: "raise", values: [ { n: "2.5x", v: 2.5 }, { n: "3x", v: 3 }, { n: "4x", v: 4 } ] } 
-    ],
-    calc: (v) => {
-      const reward = v.pot + v.my_bet;
-      const risk = v.raise_to + v.pot + v.my_bet;
-      return ((reward / risk) * 100).toFixed(1) + "%";
-    }
-  },
-  spr: {
-    title: "有效籌碼", sub: "SPR",
-    fields: [ { id: "pot", label: "POT 底池" }, { id: "stack", label: "STACK 有效籌碼" } ],
-    calc: (v) => (v.stack / v.pot).toFixed(2)
-  }
-};
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-2"><span id="label_quick_bet" class="text-[10px] opacity-40 ml-1 italic">快捷下注 (Bet)</span>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="quickBet(0.33)" class="gold-border rounded-xl py-3 text-xs bg-[#111] active:bg-gold/20 active:scale-95 transition-all">1/3</button>
+              <button onclick="quickBet(0.5)" class="gold-border rounded-xl py-3 text-xs bg-[#111] active:bg-gold/20 active:scale-95 transition-all">1/2</button>
+              <button onclick="quickBet(1.0)" class="gold-border rounded-xl py-3 text-xs bg-[#111] active:bg-gold/20 active:scale-95 transition-all">Pot</button>
+            </div>
+          </div>
+          <div id="quickRaiseGroup" class="space-y-2"><span class="text-[10px] opacity-40 ml-1 italic">加註倍數 (Raise)</span>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="quickRaise(2.5)" class="gold-border rounded-xl py-3 text-xs bg-[#111] active:bg-gold/20 active:scale-95 transition-all">2.5x</button>
+              <button onclick="quickRaise(3)" class="gold-border rounded-xl py-3 text-xs bg-[#111] active:bg-gold/20 active:scale-95 transition-all">3x</button>
+              <button onclick="quickRaise(4)" class="gold-border rounded-xl py-3 text-xs bg-[#111] active:bg-gold/20 active:scale-95 transition-all">4x</button>
+            </div>
+          </div>
+        </div>
 
-let currentToolId = null;
-
-function openTool(id) {
-    currentToolId = id;
-    const tool = TOOLS[id];
-    document.getElementById('sheet-title').textContent = tool.title;
-    document.getElementById('sheet-sub').textContent = tool.sub;
-    
-    // 渲染 Input
-    document.getElementById('input-area').innerHTML = tool.fields.map(f => `
-      <div id="box-${f.id}">
-        <label class="text-[10px] opacity-50 ml-1 mb-1.5 block">${f.label}</label>
-        <input id="f-${f.id}" type="number" placeholder="0" oninput="doCalc()">
-      </div>
-    `).join('');
-    
-    // 渲染快捷鍵
-    document.getElementById('quick-area').innerHTML = (tool.quick || []).map(group => `
-      <div>
-        <span class="text-[10px] opacity-30 ml-1 italic tracking-widest">${group.label}</span>
-        <div class="grid grid-cols-3 gap-3 mt-2">
-          ${group.values.map(b => `<button onclick="handleQuick('${group.type}', ${b.v})" class="gold-border rounded-2xl py-3.5 text-xs bg-[#111] active:bg-gold active:text-black transition-all shadow-sm">${b.n}</button>`).join('')}
+        <div class="pt-6 border-t border-white/5">
+          <div class="flex justify-between items-center"><span id="resultLabel" class="text-sm opacity-60">最低防禦頻率 (MDF)</span><span id="warn_msg" class="text-[10px] text-red-500 font-mono"></span></div>
+          <div id="mdf_result" class="text-[68px] font-mono font-bold gold-glow leading-none mt-2">--%</div>
         </div>
       </div>
-    `).join('');
+    </section>
+  </div>
 
-    document.getElementById('backdrop').classList.add('on');
-    document.getElementById('sheet').classList.add('on');
-    doCalc();
-}
+  <script>
+    // 模組化逻辑字典：不影響 UI，只定義不同工具點擊後的行為
+    const TOOLS_CONFIG = {
+      mdf_bet: { title: "面對下注", sub: "Facing Bet", label: "最低防禦頻率 (MDF)" },
+      mdf_raise: { title: "面對加註", sub: "Facing Raise", label: "最低防禦頻率 (MDF)" },
+      spr: { title: "下注幾何", sub: "SPR", label: "Stack-to-Pot Ratio" }
+    };
 
-function closeTool() {
-    document.getElementById('backdrop').classList.remove('on');
-    document.getElementById('sheet').classList.remove('on');
-}
+    let currentTool = 'mdf_bet';
+    const getV = (id) => parseFloat(document.getElementById(id).value) || 0;
 
-function handleQuick(type, val) {
-    const potInput = document.getElementById('f-pot');
-    if (!parseFloat(potInput.value)) {
-        potInput.value = 1000;
-        document.getElementById('box-pot').classList.add('flash-gold');
-        setTimeout(() => document.getElementById('box-pot').classList.remove('flash-gold'), 500);
+    function resetInputs() {
+      document.querySelectorAll('input').forEach(input => input.value = '');
+      document.getElementById('mdf_result').textContent = '--%';
+      document.getElementById('warn_msg').textContent = '';
     }
-    const pot = parseFloat(potInput.value);
-    
-    if (type === 'bet') {
-        const target = (currentToolId === 'mdf_bet') ? 'f-opp_bet' : 'f-my_bet';
-        document.getElementById(target).value = Math.round(pot * val);
-    } else if (type === 'raise') {
-        const myBet = parseFloat(document.getElementById('f-my_bet').value) || 0;
-        document.getElementById('f-raise_to').value = Math.round(myBet * val);
+
+    function openTool(toolId) {
+      resetInputs();
+      currentTool = toolId;
+      
+      const config = TOOLS_CONFIG[toolId] || { title: "未開發", sub: "Pending", label: "Result" };
+      
+      // 更新標題
+      document.getElementById('toolTitle').textContent = config.title;
+      document.getElementById('toolSub').textContent = config.sub;
+      document.getElementById('resultLabel').textContent = config.label;
+      
+      // 核心 UI 切換邏輯 (針對 MDF 系列)
+      const isMdfBet = toolId === 'mdf_bet';
+      const isSpr = toolId === 'spr';
+
+      // 欄位顯示控制
+      document.getElementById('betBox').style.display = (isMdfBet || isSpr) ? 'none' : 'block';
+      document.getElementById('label_raise').textContent = isMdfBet ? 'OPP BET' : (isSpr ? 'STACK' : 'RAISE TO');
+      
+      // 快捷鍵控制
+      const qRaise = document.getElementById('quickRaiseGroup');
+      qRaise.style.opacity = (isMdfBet || isSpr) ? '0' : '1';
+      qRaise.style.pointerEvents = (isMdfBet || isSpr) ? 'none' : 'auto';
+
+      document.getElementById('backdrop').classList.add('on');
+      document.getElementById('sheet').classList.add('on');
     }
-    doCalc();
-}
 
-function doCalc() {
-    const tool = TOOLS[currentToolId];
-    if (!tool) return;
-    const vals = {};
-    tool.fields.forEach(f => vals[f.id] = parseFloat(document.getElementById(`f-${f.id}`).value) || 0);
-    const result = tool.calc(vals);
-    document.getElementById('result-value').textContent = isNaN(parseFloat(result)) ? "--" : result;
-}
+    function closeTool() {
+      document.getElementById('backdrop').classList.remove('on');
+      document.getElementById('sheet').classList.remove('on');
+      setTimeout(resetInputs, 300);
+    }
 
-// 初始化次要工具
-const subGrid = document.getElementById('grid-sub');
-['spr'].forEach(key => {
-    const tool = TOOLS[key];
-    subGrid.innerHTML += `<button onclick="openTool('${key}')" class="h-24 gold-border rounded-2xl bg-[#0e0e0e] flex flex-col items-center justify-center active:scale-95 transition-all"><span class="text-sm font-bold">${tool.title}</span><span class="text-[9px] opacity-40">${tool.sub}</span></button>`;
-});
+    function checkPot() {
+      if (getV('in_pot') <= 0) {
+        document.getElementById('in_pot').value = 1000;
+        document.getElementById('potBox').classList.add('flash-gold');
+        setTimeout(() => document.getElementById('potBox').classList.remove('flash-gold'), 500);
+      }
+    }
 
-</script>
+    function quickBet(frac) {
+      checkPot();
+      const amount = Math.round(getV('in_pot') * frac);
+      if (currentTool === 'mdf_bet' || currentTool === 'spr') {
+        document.getElementById('in_raise').value = amount;
+      } else {
+        document.getElementById('in_bet').value = amount;
+      }
+      calculate();
+    }
+
+    function quickRaise(mult) {
+      checkPot();
+      const bet = getV('in_bet');
+      document.getElementById('in_raise').value = Math.round(bet * mult);
+      calculate();
+    }
+
+    function calculate() {
+      const P = getV('in_pot');
+      const B = getV('in_bet');
+      const R = getV('in_raise');
+      let res = 0;
+      let isPercent = true;
+
+      if (currentTool === 'mdf_bet') {
+        res = (P + R > 0) ? (P / (P + R)) : 0;
+      } else if (currentTool === 'mdf_raise') {
+        res = (R + P + B > 0) ? ((P + B) / (R + P + B)) : 0;
+      } else if (currentTool === 'spr') {
+        res = (P > 0) ? (R / P) : 0;
+        isPercent = false;
+      }
+
+      const display = isPercent ? (res * 100).toFixed(1) + "%" : res.toFixed(2);
+      document.getElementById('mdf_result').textContent = display;
+      
+      const warn = document.getElementById('warn_msg');
+      warn.textContent = (currentTool === 'mdf_raise' && R > 0 && R <= B) ? "RAISE ≤ BET?" : "";
+    }
+
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('input', calculate);
+    });
+  </script>
 </body>
 </html>
